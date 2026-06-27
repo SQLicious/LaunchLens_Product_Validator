@@ -1,0 +1,8 @@
+{
+  "category": "Water Bottles",
+  "bestsellers": [
+    {"rank": 1, "asin": "B0AAA111", "title": "Iron Flask Sports Water Bottle 32oz", "price": 24.99, "rating": 4.7},
+    {"rank": 2, "asin": "B0DDD444", "title": "Owala FreeSip Insulated 24oz", "price": 27.99, "rating": 4.7},
+    {"rank": 3, "asin": "B0CCC333", "title": "Hydro Flask Wide Mouth 32oz", "price": 44.95, "rating": 4.8}
+  ]
+}

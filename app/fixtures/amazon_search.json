@@ -1,0 +1,8 @@
+{
+  "results": [
+    {"asin": "B0AAA111", "title": "Iron Flask Sports Water Bottle 32oz", "price": 24.99, "rating": 4.7, "reviews": 92451},
+    {"asin": "B0BBB222", "title": "ThermoFlask Insulated 24oz (2-pack)", "price": 27.99, "rating": 4.6, "reviews": 41320},
+    {"asin": "B0CCC333", "title": "Hydro Flask Wide Mouth 32oz", "price": 44.95, "rating": 4.8, "reviews": 36210}
+  ],
+  "category": "Insulated water bottles"
+}

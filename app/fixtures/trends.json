@@ -1,0 +1,12 @@
+{
+  "interest_points": [
+    {"date": "Jan 2026", "value": 61},
+    {"date": "Feb 2026", "value": 64},
+    {"date": "Mar 2026", "value": 70},
+    {"date": "Apr 2026", "value": 75},
+    {"date": "May 2026", "value": 79},
+    {"date": "Jun 2026", "value": 83}
+  ],
+  "trend": "rising",
+  "related_queries": ["insulated water bottle", "leak proof bottle", "steel water bottle 1l", "gym water bottle"]
+}

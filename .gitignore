@@ -1,0 +1,13 @@
+# secrets
+.env
+
+# checkpointer DB
+*.sqlite
+*.sqlite-*
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/

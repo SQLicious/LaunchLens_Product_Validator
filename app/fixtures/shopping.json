@@ -1,0 +1,8 @@
+{
+  "offers": [
+    {"title": "Stainless Steel Insulated Bottle 32oz", "price": 29.99, "currency": "USD", "source": "Walmart", "rating": 4.3},
+    {"title": "Vacuum Bottle 24oz", "price": 19.99, "currency": "USD", "source": "Amazon", "rating": 4.1},
+    {"title": "Premium Insulated Flask 32oz", "price": 44.95, "currency": "USD", "source": "Target", "rating": 4.5}
+  ],
+  "price_range": {"low": 19.99, "high": 44.95, "currency": "USD"}
+}
