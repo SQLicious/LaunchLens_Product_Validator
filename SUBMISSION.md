@@ -1,7 +1,7 @@
 # Submission - Assignment 3
 
 **Student(s):** Ruby Gunna
-**GitHub repo:** _https://github.com/…_
+**GitHub repo:** https://github.com/SQLicious/LaunchLens_Product_Validator
 **Demo video (≥2 min):** _Loom/YouTube URL or path to committed file_
 **Presentation / slides:** _link to PDF/PPT/Google Slides_
 
