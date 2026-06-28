@@ -28,7 +28,7 @@ class FakeLLM:
 
 config.get_llm = lambda tools=None: FakeLLM()
 
-DB = "/tmp/smoke.sqlite"
+DB = os.path.join(os.environ.get("TEMP", "/tmp"), "smoke.sqlite")
 if os.path.exists(DB):
     os.remove(DB)
 
@@ -77,4 +77,4 @@ with SqliteSaver.from_conn_string(DB) as cp:
     assert srcs == ["amazon_search", "google_shopping"], srcs
 
 os.remove(DB)
-print("\nALL SMOKE TESTS PASSED ✅")
+print("\nALL SMOKE TESTS PASSED [OK]")
