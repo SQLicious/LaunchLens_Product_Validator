@@ -2,7 +2,7 @@
 
 **Student(s):** Ruby Gunna
 **GitHub repo:** https://github.com/SQLicious/LaunchLens_Product_Validator
-**Demo video (≥2 min):** _Loom/YouTube URL or path to committed file_
+**Demo video (≥2 min):** https://www.youtube.com/watch?v=zAA_MEcIPOk
 **Presentation / slides:** `slides/LaunchLens.pdf` (source: `slides/LaunchLens.pptx`, rebuild via `python slides/build_deck.py`)
 
 ---
