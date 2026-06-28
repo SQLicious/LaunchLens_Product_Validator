@@ -36,6 +36,7 @@ remembering the conversation across turns.
 - **SerpApi engine(s):** Google Trends, Google News, Google Shopping — demand, landscape, cross-retailer prices.
 - **Oxylabs source(s):** amazon_search, amazon_product (reviews), amazon_bestsellers — supply, complaints, competition.
 - **How they combine:** the agent reasons over demand (Trends/News) + supply (Amazon prices/reviews) in one judgement to issue the Go/No-Go/Niche verdict.
+- **Reasoning engine (LLM):** `qwen-plus` via Qwen cloud (Alibaba DashScope), OpenAI-compatible endpoint, temperature 0. The LLM runs in `agent_node` (fuses demand+supply, picks tools, writes the verdict) and `summarize_node` (rolling memory); routing and verdict labelling stay LLM-free for cheap, deterministic behaviour. Chosen for native tool/function-calling, low cost + large context, and a drop-in `ChatOpenAI` + `base_url` that's swappable via `LLM_PROVIDER`/`LLM_MODEL`. See the **"The reasoning engine"** slide in `slides/LaunchLens.pdf`.
 - **Live vs mocked:** MOCK_MODE=true uses `app/fixtures/`. The demo shows ≥1 live call per provider with MOCK_MODE=false.
 
 ---
