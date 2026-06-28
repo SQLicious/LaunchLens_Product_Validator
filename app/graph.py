@@ -2,8 +2,8 @@
 
 Flow:
     START
-      -> summarize        (CONCEPT 5: short-term memory / summarization)
-      -> router           (CONCEPT 3: routing, conditional edges)
+      -> summarize        (CONCEPT 5 applied: short-term memory / summarization)
+      -> router           (CONCEPT 3 applied: routing, conditional edges)
          |- demand  -----------------\
          |- pricing ------------------> agent
          |- chat   -------------------/
