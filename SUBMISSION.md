@@ -1,6 +1,6 @@
 # Submission - Assignment 3
 
-**Student(s):** _your name(s)_
+**Student(s):** Ruby Gunna
 **GitHub repo:** _https://github.com/…_
 **Demo video (≥2 min):** _Loom/YouTube URL or path to committed file_
 **Presentation / slides:** _link to PDF/PPT/Google Slides_
@@ -23,11 +23,11 @@ remembering the conversation across turns.
 
 | Concept | File | Function / node | Line(s) | One-line note |
 |---------|------|-----------------|---------|---------------|
-| Graph & state | `app/state.py`, `app/graph.py` | `State` / `merge_research`; `build_graph` | state.py 16 & 28; graph.py 30 | Typed `StateGraph`; reducer channels for messages + fan-out research. |
-| Fan-out (parallel) | `app/graph.py`, `app/nodes.py` | `route` → `fan_trends`/`fan_amazon`/`fan_news` | graph.py 56–66; nodes.py 76/82/88 | Router returns a 3-node list → parallel pulls → merge on `agent`. |
-| Routing (conditional edges) | `app/router.py`, `app/graph.py` | `classify_intent`, `route`; `add_conditional_edges` | router.py 31 & 45; graph.py 49 | Intent → demand / pricing / full / chat (chat = default). |
-| Agent node + tools | `app/nodes.py`, `app/graph.py` | `agent_node`; `ToolNode`+`tools_condition` | nodes.py 113; graph.py 41 & 68 | LLM bound to 6 tools; agent↔tools loop; slim JSON outputs. |
-| Short-term memory (checkpointer + summarization) | `app/main.py`, `app/nodes.py` | `SqliteSaver`; `summarize_node` | main.py run(); nodes.py 42 | Survives restart (thread_id) + summarization bounds context. |
+| Graph & state | `app/state.py`, `app/graph.py` | `State` / `merge_research`; `build_graph` | state.py 16 & 28; graph.py 28 | Typed `StateGraph`; reducer channels for messages + fan-out research. |
+| Fan-out (parallel) | `app/graph.py`, `app/nodes.py` | `route` → `fan_trends`/`fan_amazon`/`fan_news` | graph.py 49–65; nodes.py 98/104/110 | Router returns a 3-node list → parallel pulls → merge on `agent`. |
+| Routing (conditional edges) | `app/router.py`, `app/graph.py` | `classify_intent`, `route`; `add_conditional_edges` | router.py 65 & 81; graph.py 49 | Intent → demand / pricing / full / chat (chat = default). |
+| Agent node + tools | `app/nodes.py`, `app/graph.py` | `agent_node`; `ToolNode`+`tools_condition` | nodes.py 135; graph.py 41 & 68 | LLM bound to 6 tools; agent↔tools loop; slim JSON outputs. |
+| Short-term memory (checkpointer + summarization) | `app/main.py`, `app/nodes.py` | `SqliteSaver`; `summarize_node` | main.py 140; nodes.py 64 | Survives restart (thread_id) + summarization bounds context. |
 
 ---
 
@@ -63,7 +63,15 @@ python -m app.main
 
 ## 6. Bonus attempted (if any)
 
-_e.g. long-term memory / eval harness / FastAPI UI / streaming — fill in if you add any._
+- **Live turn streaming** — the CLI streams each step (reading context, routing,
+  pulling supply/demand, reasoning) as it happens, plus token-streamed answers
+  (`app/main.py`, `_stream_turn`).
+- **Verdict confidence + conditional Go/No-Go** — the agent emits a
+  `CONFIDENCE: High|Medium|Low` line and conditional verdicts (e.g. "Go IF COGS
+  < $X"); parsed into state and shown as `[verdict: Go, confidence: Medium]`.
+- **Demand-signal sanity** — Google Trends is classified by slope with a
+  seasonal/relative-index caveat, so a small index move isn't misread as a demand
+  spike.
 
 ---
 

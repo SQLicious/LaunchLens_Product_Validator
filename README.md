@@ -107,11 +107,11 @@ Regenerate the live diagram anytime with:
 
 | # | Concept | File | Function / node | Line(s) | Note |
 |---|---------|------|-----------------|---------|------|
-| 1 | **Graph & state** | `app/state.py` · `app/graph.py` | `State`, `merge_research`; `build_graph` | state.py 16, 28; graph.py 30 | Typed `StateGraph` state; two reducer channels (`add_messages`, `merge_research`). |
-| 2 | **Fan-out (parallel)** | `app/graph.py` · `app/nodes.py` | `route`→`fan_trends/fan_amazon/fan_news` | graph.py 56–66; nodes.py 76, 82, 88 | Router returns a 3-node list → parallel pulls → merge on `agent` via `merge_research`. |
-| 3 | **Routing (conditional edges)** | `app/router.py` · `app/graph.py` | `classify_intent`, `route`; `add_conditional_edges` | router.py 31, 45; graph.py 49 | Classifies intent (demand / pricing / full / chat) and branches, with a `chat` default. |
-| 4 | **Agent node + tools** | `app/nodes.py` · `app/graph.py` · `app/tools/` | `agent_node`; `ToolNode` + `tools_condition` | nodes.py 113; graph.py 41, 68 | LLM bound to 6 SerpApi/Oxylabs tools; agent↔tools loop; tools return slim JSON. |
-| 5 | **Short-term memory** | `app/main.py` · `app/nodes.py` | `SqliteSaver` checkpointer; `summarize_node` | main.py (run); nodes.py 42 | Checkpointer survives restarts (keyed by thread_id) **+** summarization bounds context. |
+| 1 | **Graph & state** | `app/state.py` · `app/graph.py` | `State`, `merge_research`; `build_graph` | state.py 16, 28; graph.py 28 | Typed `StateGraph` state; two reducer channels (`add_messages`, `merge_research`). |
+| 2 | **Fan-out (parallel)** | `app/graph.py` · `app/nodes.py` | `route`→`fan_trends/fan_amazon/fan_news` | graph.py 49–65; nodes.py 98, 104, 110 | Router returns a 3-node list → parallel pulls → merge on `agent` via `merge_research`. |
+| 3 | **Routing (conditional edges)** | `app/router.py` · `app/graph.py` | `classify_intent`, `route`; `add_conditional_edges` | router.py 65, 81; graph.py 49 | Classifies intent (demand / pricing / full / chat) and branches, with a `chat` default. |
+| 4 | **Agent node + tools** | `app/nodes.py` · `app/graph.py` · `app/tools/` | `agent_node`; `ToolNode` + `tools_condition` | nodes.py 135; graph.py 41, 68 | LLM bound to 6 SerpApi/Oxylabs tools; agent↔tools loop; tools return slim JSON. |
+| 5 | **Short-term memory** | `app/main.py` · `app/nodes.py` | `SqliteSaver` checkpointer; `summarize_node` | main.py 140; nodes.py 64 | Checkpointer survives restarts (keyed by thread_id) **+** summarization bounds context. |
 
 ---
 
