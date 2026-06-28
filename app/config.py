@@ -25,6 +25,7 @@ CHECKPOINT_DB: str = os.getenv("CHECKPOINT_DB", "launchlens.sqlite")
 # ---- LLM ----
 LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "qwen")
 LLM_MODEL: str = os.getenv("LLM_MODEL", "qwen-plus")
+LLM_TIMEOUT: int = int(os.getenv("LLM_TIMEOUT", "60"))  # seconds; no hangs forever
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 # Qwen cloud (Alibaba DashScope) — OpenAI-compatible endpoint.
 QWEN_API_KEY = os.getenv("QWEN_API_KEY") or os.getenv("DASHSCOPE_API_KEY")
@@ -54,11 +55,14 @@ def get_llm(tools: list | None = None):
             temperature=0,
             api_key=QWEN_API_KEY,
             base_url=QWEN_BASE_URL,
+            timeout=LLM_TIMEOUT,
+            max_retries=2,
         )
     elif LLM_PROVIDER == "openai":
         from langchain_openai import ChatOpenAI
 
-        llm = ChatOpenAI(model=LLM_MODEL, temperature=0, api_key=OPENAI_API_KEY)
+        llm = ChatOpenAI(model=LLM_MODEL, temperature=0, api_key=OPENAI_API_KEY,
+                         timeout=LLM_TIMEOUT, max_retries=2)
     else:
         raise ValueError(f"Unsupported LLM_PROVIDER: {LLM_PROVIDER}")
 

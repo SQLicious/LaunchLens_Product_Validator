@@ -30,6 +30,9 @@ class State(TypedDict, total=False):
     messages: Annotated[list, add_messages]
     # router output: "demand" | "pricing" | "full" | "chat"
     intent: str
+    # short product keyword distilled from the founder's message, used as the
+    # search query for Trends/News/Shopping/Amazon (raw message is too long)
+    query: str
     # demand + supply evidence gathered this turn (merged across parallel nodes)
     research: Annotated[list, merge_research]
     # rolling conversation summary kept by the summarization node

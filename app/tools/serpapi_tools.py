@@ -38,7 +38,8 @@ def fetch_trends(query: str) -> dict:
     if config.MOCK_MODE:
         data = load_fixture("trends.json")
         return {"query": query, **data}
-    raw = _get({"engine": "google_trends", "q": query, "data_type": "TIMESERIES"})
+    # Google Trends rejects queries over ~100 chars -- clip as a last-resort guard
+    raw = _get({"engine": "google_trends", "q": query[:95], "data_type": "TIMESERIES"})
     timeline = raw.get("interest_over_time", {}).get("timeline_data", [])
     points = [
         {"date": p.get("date"), "value": (p.get("values") or [{}])[0].get("extracted_value")}

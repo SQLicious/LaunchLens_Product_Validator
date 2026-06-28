@@ -37,6 +37,11 @@ def _latest_user_text(state: State) -> str:
     return ""
 
 
+def _search_query(state: State) -> str:
+    """Short keyword the router distilled for this turn (falls back to raw text)."""
+    return state.get("query") or _latest_user_text(state)
+
+
 # ---------- CONCEPT 5: short-term memory (summarization) ----------
 
 def summarize_node(state: State) -> dict:
@@ -75,19 +80,19 @@ def summarize_node(state: State) -> dict:
 
 def trends_node(state: State) -> dict:
     """Parallel branch: pull Google Trends demand."""
-    q = _latest_user_text(state)
+    q = _search_query(state)
     return {"research": [{"source": "google_trends", "data": fetch_trends(q)}]}
 
 
 def amazon_node(state: State) -> dict:
     """Parallel branch: pull Amazon supply (Oxylabs)."""
-    q = _latest_user_text(state)
+    q = _search_query(state)
     return {"research": [{"source": "amazon_search", "data": fetch_amazon_search(q)}]}
 
 
 def news_node(state: State) -> dict:
     """Parallel branch: pull Google News landscape."""
-    q = _latest_user_text(state)
+    q = _search_query(state)
     return {"research": [{"source": "google_news", "data": fetch_news(q)}]}
 
 
@@ -95,13 +100,13 @@ def news_node(state: State) -> dict:
 
 def demand_node(state: State) -> dict:
     """Demand-only branch (Google Trends)."""
-    q = _latest_user_text(state)
+    q = _search_query(state)
     return {"research": [{"source": "google_trends", "data": fetch_trends(q)}]}
 
 
 def pricing_node(state: State) -> dict:
     """Pricing branch: Google Shopping + Amazon, the two price worlds."""
-    q = _latest_user_text(state)
+    q = _search_query(state)
     return {"research": [
         {"source": "google_shopping", "data": fetch_shopping(q)},
         {"source": "amazon_search", "data": fetch_amazon_search(q)},

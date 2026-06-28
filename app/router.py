@@ -21,15 +21,49 @@ _DEMAND = ["trend", "trending", "demand", "search volume", "interest",
            "popular", "growing", "rising"]
 
 
-def _latest_user_text(state: State) -> str:
+def _latest_user_raw(state: State) -> str:
+    """The latest human message, original casing preserved."""
     for msg in reversed(state.get("messages", [])):
         if getattr(msg, "type", None) == "human":
-            return (msg.content or "").lower()
+            return msg.content or ""
     return ""
 
 
+def _latest_user_text(state: State) -> str:
+    return _latest_user_raw(state).lower()
+
+
+def derive_search_query(text: str) -> str:
+    """Distil a short product search keyword from a founder's message.
+
+    Search engines want a topic, not a paragraph -- Google Trends in particular
+    rejects queries over ~100 characters. Short messages are used as-is; longer
+    ones are reduced to a 2-5 word keyword via the LLM, with a plain-truncation
+    fallback so search never hard-fails (and so MOCK mode needs no LLM key).
+    """
+    text = (text or "").strip()
+    if len(text) <= 60:
+        return text
+
+    from . import config
+    if config.MOCK_MODE:
+        return text[:80]
+    try:
+        prompt = (
+            "Extract a short product search keyword (2-5 words, no price, no "
+            "punctuation) describing the product in this founder message. "
+            "Return ONLY the keyword, nothing else.\n\n"
+            f"{text}"
+        )
+        keyword = config.get_llm().invoke(prompt).content.strip().strip('"')
+        keyword = keyword.splitlines()[0].strip()[:80]
+        return keyword or text[:80]
+    except Exception:
+        return text[:80]
+
+
 def classify_intent(state: State) -> dict:
-    """Router node: set intent and clear last turn's research."""
+    """Router node: set intent, distil a search query, clear last turn's research."""
     text = _latest_user_text(state)
     if any(k in text for k in _FULL):
         intent = "full"
@@ -39,7 +73,9 @@ def classify_intent(state: State) -> dict:
         intent = "demand"
     else:
         intent = "chat"
-    return {"intent": intent, "research": []}  # [] resets the reducer
+    # only spend an LLM call when a branch will actually search
+    query = "" if intent == "chat" else derive_search_query(_latest_user_raw(state))
+    return {"intent": intent, "research": [], "query": query}  # [] resets the reducer
 
 
 def route(state: State):
