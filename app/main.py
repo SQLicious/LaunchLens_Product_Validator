@@ -168,7 +168,9 @@ def run(thread_id: str) -> None:
                     print(f"\nLaunchLens> {state['messages'][-1].content}")
                 verdict = state.get("verdict")
                 if verdict and verdict != "Undecided":
-                    print(f"[verdict: {verdict}]")
+                    conf = state.get("confidence")
+                    suffix = f", confidence: {conf}" if conf and conf != "Unknown" else ""
+                    print(f"[verdict: {verdict}{suffix}]")
                 print()
             except Exception as exc:  # degrade gracefully, never crash the loop
                 print(f"\n[!] Something went wrong: {exc}\n")

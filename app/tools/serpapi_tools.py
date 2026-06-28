@@ -20,6 +20,35 @@ except ImportError:  # requests only needed for live mode
 _SERPAPI = "https://serpapi.com/search"
 
 
+def _classify_trend(vals: list) -> tuple:
+    """Classify a Google Trends series WITHOUT over-reading it.
+
+    Trends values are a 0-100 RELATIVE index, not unit volume, so a small
+    absolute move (e.g. 5 -> 10) is noise-level even though it 'doubles'. We
+    compare the back third against the front third and require a >=10-point
+    slope before calling it rising/declining, treat a low peak as flat, and
+    always attach a caveat that the index is seasonal + relative.
+    """
+    if len(vals) < 4:
+        return "unknown", "Too few data points to judge a trend."
+    third = max(1, len(vals) // 3)
+    early = sum(vals[:third]) / third
+    late = sum(vals[-third:]) / third
+    delta = late - early
+    if max(vals) < 25:
+        direction = "low/flat"
+    elif delta >= 10:
+        direction = "rising"
+    elif delta <= -10:
+        direction = "declining"
+    else:
+        direction = "flat"
+    note = ("Google Trends is a 0-100 RELATIVE, seasonal index -- not unit "
+            "volume. Confirm against absolute demand and seasonality before "
+            "weighting heavily.")
+    return direction, note
+
+
 def _get(params: dict) -> dict:
     """Call SerpApi with the shared key. Raises on HTTP error."""
     if requests is None:
@@ -46,9 +75,10 @@ def fetch_trends(query: str) -> dict:
         for p in clip(timeline, 12)
     ]
     vals = [p["value"] for p in points if isinstance(p["value"], int)]
-    trend = "rising" if len(vals) >= 2 and vals[-1] > vals[0] else "flat/declining"
+    trend, trend_note = _classify_trend(vals)
     related = [r.get("query") for r in raw.get("related_queries", {}).get("top", [])]
     return {"query": query, "interest_points": points, "trend": trend,
+            "trend_note": trend_note, "peak_interest": max(vals) if vals else None,
             "related_queries": clip(related, 6)}
 
 

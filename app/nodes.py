@@ -22,11 +22,28 @@ SYSTEM_PROMPT = SystemMessage(content=(
     "You are LaunchLens, a market-intelligence copilot for founders. "
     "Your job is to FUSE demand signals (Google: Trends, Shopping, News) with "
     "supply signals (Amazon via Oxylabs: listings, prices, review complaints) "
-    "into ONE combined judgement -- never two separate reports. "
-    "When you have enough evidence, end your answer with a clear verdict line "
-    "formatted exactly as 'VERDICT: Go' or 'VERDICT: No-Go' or 'VERDICT: Niche', "
-    "followed by a 2-3 sentence rationale covering demand, a price band, and "
-    "positioning/differentiation. Call tools when you need fresh data."
+    "into ONE combined judgement -- never two separate reports.\n"
+    "Hold yourself to these standards before deciding:\n"
+    "- UNIT ECONOMICS: for any physical/product launch, reason about whether the "
+    "target price can clear costs -- estimated COGS, marketplace fees (~15% "
+    "referral + fulfillment on Amazon), and ad/PPC cost in the category. A price "
+    "gap between competitors is only an opening if the margin survives it.\n"
+    "- DEMAND: treat Google Trends as a 0-100 RELATIVE, seasonal index, not unit "
+    "volume; a small absolute move is noise. Never read a 5->10 index as demand "
+    "doubling, and check for seasonality.\n"
+    "- COMPETITION: weigh entrenchment (review counts, dominant brands), not just "
+    "price. A gap flanked by 10k+-review incumbents may be a dead zone.\n"
+    "- COMPLAINTS: quantify how common an issue is (share of reviews); never "
+    "generalize a market gap from a single quoted review.\n"
+    "- DATA GAPS: if a source returned empty or failed, say so explicitly and "
+    "lower your confidence accordingly.\n"
+    "When you have enough evidence, end with a verdict line formatted exactly as "
+    "'VERDICT: Go' or 'VERDICT: No-Go' or 'VERDICT: Niche', then a line "
+    "'CONFIDENCE: High' (or Medium / Low), then a 2-3 sentence rationale covering "
+    "demand, a price band, unit-economics, and positioning. Make the verdict "
+    "CONDITIONAL where a Go depends on hitting a margin or differentiation bar "
+    "(e.g. 'Go IF COGS < $X and a defensible feature exists'). Call tools for "
+    "fresh data."
 ))
 
 
@@ -135,18 +152,35 @@ def agent_node(state: State) -> dict:
 
 
 def verdict_node(state: State) -> dict:
-    """Extract the Go / No-Go / Niche label from the agent's final answer."""
-    last = ""
+    """Extract the Go / No-Go / Niche label + confidence from the agent's reply.
+
+    Parse the explicit 'VERDICT:' / 'CONFIDENCE:' lines the system prompt
+    mandates, rather than substring-matching the whole reply (which trips on
+    words like 'going' or 'cargo' and ignores the No-Go ordering).
+    """
+    text = ""
     for m in reversed(state.get("messages", [])):
         if isinstance(m, AIMessage) and m.content:
-            last = m.content.upper()
+            text = m.content
             break
-    if "NO-GO" in last or "NO GO" in last:
-        label = "No-Go"
-    elif "NICHE" in last:
-        label = "Niche"
-    elif "GO" in last:
-        label = "Go"
-    else:
-        label = "Undecided"
-    return {"verdict": label}
+
+    label, confidence = "Undecided", "Unknown"
+    for line in text.splitlines():
+        s = line.strip().upper()
+        if "VERDICT" in s:
+            # parse only the token AFTER the keyword, so words like 'going' or
+            # 'cargo' elsewhere in the reply can't be mistaken for a verdict
+            payload = s.split("VERDICT", 1)[-1]
+            if "NO-GO" in payload or "NO GO" in payload:
+                label = "No-Go"
+            elif "NICHE" in payload:
+                label = "Niche"
+            elif "GO" in payload:
+                label = "Go"
+        if "CONFIDENCE" in s:
+            payload = s.split("CONFIDENCE", 1)[-1]
+            for level in ("HIGH", "MEDIUM", "LOW"):
+                if level in payload:
+                    confidence = level.capitalize()
+                    break
+    return {"verdict": label, "confidence": confidence}

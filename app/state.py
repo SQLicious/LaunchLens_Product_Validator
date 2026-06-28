@@ -39,3 +39,5 @@ class State(TypedDict, total=False):
     summary: str
     # final Go / No-Go / Niche label
     verdict: str
+    # verdict confidence: High | Medium | Low (Unknown if agent omitted it)
+    confidence: str

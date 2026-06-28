@@ -163,6 +163,19 @@ launchlens/
 
 Run the offline test: `python smoke_test.py`
 
+---
+
+## Future enhancements
+
+- **Unit-economics / FBA price-comparison module.** Today the agent *reasons*
+  about margin qualitatively (prompted to weigh COGS, marketplace fees, and ad
+  cost), but it has no hard numbers. A dedicated tool would turn a target price
+  into an actual margin verdict: estimate COGS (Alibaba/category heuristic or
+  founder input), apply Amazon's referral (~15%) + FBA fulfillment fee tiers by
+  size/weight, fold in a category PPC/ACoS estimate, and compare net margin
+  against competitor price points. This converts "there's a price gap at $20"
+  into "you net $X at $20 after fees and ads — Go/No-Go."
+
 ## Authors
 
 - Ruby Gunna Janarthanan
