@@ -5,6 +5,10 @@
 *.sqlite
 *.sqlite-*
 
+# large video / reference media (use a link in README/SUBMISSION instead)
+video/
+*.mp4
+
 # python
 __pycache__/
 *.pyc
