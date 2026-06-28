@@ -27,7 +27,7 @@ def _scrape(payload: dict) -> dict:
         _OXY,
         auth=(config.OXYLABS_USERNAME, config.OXYLABS_PASSWORD),
         json=payload,
-        timeout=60,
+        timeout=120,
     )
     resp.raise_for_status()
     results = resp.json().get("results", [])
