@@ -18,7 +18,7 @@ Built for Assignment 3 (LaunchLens) — *LangGraph for Production AI Agents*.
 
 ## 🎬 Demo video
 
-A 2-minute walkthrough — what LaunchLens is, the data-fusion architecture, and a
+A 6-minute walkthrough — what LaunchLens is, the data-fusion architecture, and a
 live conversation with a real Go/No-Go verdict and memory across turns.
 
 [![LaunchLens demo video](https://img.youtube.com/vi/zAA_MEcIPOk/maxresdefault.jpg)](https://www.youtube.com/watch?v=zAA_MEcIPOk)
