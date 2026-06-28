@@ -18,11 +18,30 @@ every node and conversations survive restarts, keyed by thread_id.
 from __future__ import annotations
 
 from langgraph.graph import END, START, StateGraph
-from langgraph.prebuilt import ToolNode, tools_condition
+from langgraph.prebuilt import ToolNode
 
-from . import nodes, router
+from . import config, nodes, router
 from .state import State
 from .tools import ALL_TOOLS
+
+
+def route_agent(state: State) -> str:
+    """Deterministic gate for the agent<->tools loop (CONCEPT 4).
+
+    The cap is enforced HERE, in code -- not by asking the model nicely. Continue
+    to "tools" only while the agent asked for tools AND fewer than
+    config.TOOL_BUDGET tool results have been gathered this turn; otherwise end
+    the loop at "verdict". This bounds the number of paid tool/LLM round-trips a
+    single founder question can trigger (the runaway loop that drained the free
+    quota). agent_node drops the tool bindings once the budget is hit, so the
+    agent can't emit a trailing tool_call that this gate would strand without a
+    result.
+    """
+    last = state["messages"][-1]
+    wants_tools = bool(getattr(last, "tool_calls", None))
+    if wants_tools and nodes.tools_used_this_turn(state) < config.TOOL_BUDGET:
+        return "tools"
+    return "verdict"
 
 
 def build_graph(checkpointer=None):
@@ -64,8 +83,9 @@ def build_graph(checkpointer=None):
     for n in ("demand", "pricing", "fan_trends", "fan_amazon", "fan_news"):
         g.add_edge(n, "agent")
 
-    # CONCEPT 4: agent <-> tools loop
-    g.add_conditional_edges("agent", tools_condition, {"tools": "tools", END: "verdict"})
+    # CONCEPT 4: agent <-> tools loop, with a deterministic per-turn tool budget
+    # (route_agent) so the loop can never run away and exhaust a paid quota.
+    g.add_conditional_edges("agent", route_agent, {"tools": "tools", "verdict": "verdict"})
     g.add_edge("tools", "agent")
     g.add_edge("verdict", END)
 

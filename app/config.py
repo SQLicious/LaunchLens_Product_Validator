@@ -21,6 +21,12 @@ def _flag(name: str, default: str = "false") -> bool:
 MOCK_MODE: bool = _flag("MOCK_MODE", "true")
 SUMMARY_TRIGGER: int = int(os.getenv("SUMMARY_TRIGGER", "10"))
 CHECKPOINT_DB: str = os.getenv("CHECKPOINT_DB", "launchlens.sqlite")
+# Max tool calls the agent may make in ONE turn. The agent<->tools loop is
+# otherwise unbounded -- a chatty model can fire dozens of paid API queries on a
+# single question and drain a quota. Once this many tool results are gathered in
+# a turn, the agent is re-invoked WITHOUT tools so it must answer from what it
+# has. Tune with TOOL_BUDGET in the environment.
+TOOL_BUDGET: int = int(os.getenv("TOOL_BUDGET", "6"))
 
 # ---- LLM ----
 LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "qwen")

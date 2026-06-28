@@ -1,7 +1,8 @@
 """Graph nodes: summarization (memory), fan-out branches, the agent, the verdict.
 
 CONCEPT 4 (Agent + tools): `agent_node` is an LLM bound to all SerpApi/Oxylabs
-tools; the agent<->tools loop is wired in graph.py via tools_condition.
+tools; the agent<->tools loop is wired in graph.py via route_agent, which also
+enforces a deterministic per-turn tool budget (config.TOOL_BUDGET).
 CONCEPT 5 (Short-term memory): `summarize_node` compresses old messages once the
 chat gets long, preserving key facts and never breaking tool-call sequences.
 The fan-out branch nodes (CONCEPT 2) pre-fetch demand+supply in parallel.
@@ -10,7 +11,13 @@ from __future__ import annotations
 
 import json
 
-from langchain_core.messages import AIMessage, HumanMessage, RemoveMessage, SystemMessage
+from langchain_core.messages import (
+    AIMessage,
+    HumanMessage,
+    RemoveMessage,
+    SystemMessage,
+    ToolMessage,
+)
 
 from . import config
 from .state import State
@@ -43,7 +50,9 @@ SYSTEM_PROMPT = SystemMessage(content=(
     "demand, a price band, unit-economics, and positioning. Make the verdict "
     "CONDITIONAL where a Go depends on hitting a margin or differentiation bar "
     "(e.g. 'Go IF COGS < $X and a defensible feature exists'). Call tools for "
-    "fresh data."
+    "fresh data. Prefer the evidence already gathered this turn, and avoid "
+    "re-querying a source with reworded variants of the same search -- one good "
+    "query per source is usually enough."
 ))
 
 
@@ -132,9 +141,34 @@ def pricing_node(state: State) -> dict:
 
 # ---------- CONCEPT 4: the agent ----------
 
+def tools_used_this_turn(state: State) -> int:
+    """Count tool results gathered since the founder's latest message.
+
+    Walks back from the end until a HumanMessage (turn boundary), so the budget
+    resets every turn automatically without a separate state counter. Shared by
+    the agent (to drop tools once spent) and graph.py's loop gate (the cap).
+    """
+    used = 0
+    for m in reversed(state.get("messages", [])):
+        if isinstance(m, HumanMessage):
+            break
+        if isinstance(m, ToolMessage):
+            used += 1
+    return used
+
+
 def agent_node(state: State) -> dict:
-    """LLM agent. Sees the summary + any pre-fetched research, and can call tools."""
-    llm = config.get_llm(ALL_TOOLS)
+    """LLM agent. Sees the summary + any pre-fetched research, and can call tools.
+
+    Enforces a per-turn tool budget (config.TOOL_BUDGET): once that many tool
+    results are in, the agent is re-invoked WITHOUT tools, so it cannot keep
+    looping paid queries and must answer from the evidence it already has. This
+    also keeps the history valid -- a no-tools call can't leave dangling
+    tool_calls that would error the next turn.
+    """
+    over_budget = tools_used_this_turn(state) >= config.TOOL_BUDGET
+    llm = config.get_llm(None if over_budget else ALL_TOOLS)
+
     context_blocks = []
     if state.get("summary"):
         context_blocks.append(f"Conversation summary:\n{state['summary']}")
@@ -142,6 +176,12 @@ def agent_node(state: State) -> dict:
         # slim, bounded context -- never dump unbounded scrape into the prompt
         evidence = json.dumps(state["research"])[:4000]
         context_blocks.append(f"Evidence gathered this turn (demand + supply):\n{evidence}")
+    if over_budget:
+        context_blocks.append(
+            "Research budget for this turn is spent -- do NOT request more data. "
+            "Give your best verdict now using the evidence above, and lower your "
+            "CONFIDENCE if a source was thin or missing."
+        )
 
     messages = [SYSTEM_PROMPT]
     if context_blocks:
